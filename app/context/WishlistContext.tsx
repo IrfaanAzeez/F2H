@@ -29,15 +29,27 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   // Load wishlist from localStorage on mount
   useEffect(() => {
-    const savedWishlist = localStorage.getItem('wishlist');
-    if (savedWishlist) {
-      setWishlist(JSON.parse(savedWishlist));
+    if (typeof window !== 'undefined') {
+      const savedWishlist = localStorage.getItem('wishlist');
+      if (savedWishlist) {
+        try {
+          setWishlist(JSON.parse(savedWishlist));
+        } catch (error) {
+          console.error('Error loading wishlist:', error);
+        }
+      }
     }
   }, []);
 
   // Save wishlist to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+      } catch (error) {
+        console.error('Error saving wishlist:', error);
+      }
+    }
   }, [wishlist]);
 
   const addToWishlist = (product: Product) => {
