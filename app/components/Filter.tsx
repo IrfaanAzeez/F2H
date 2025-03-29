@@ -1,20 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface FilterProps {
   activeFilters: {
     colors: string[];
     priceRange: { min: number; max: number };
-    types: string[];
+    productTypes: string[];
     rating: number;
-    sellers: string[];
+    seller: string;
   };
   onFilterChange: (filters: any) => void;
 }
 
 export default function Filter({ activeFilters, onFilterChange }: FilterProps) {
-  const [priceRange, setPriceRange] = useState(activeFilters.priceRange);
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
+
+  useEffect(() => {
+    if (activeFilters?.priceRange) {
+      setPriceRange(activeFilters.priceRange);
+    }
+  }, [activeFilters]);
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseInt(e.target.value);
@@ -23,17 +29,17 @@ export default function Filter({ activeFilters, onFilterChange }: FilterProps) {
   };
 
   const handleColorChange = (color: string) => {
-    const newColors = activeFilters.colors.includes(color)
+    const newColors = activeFilters?.colors?.includes(color)
       ? activeFilters.colors.filter(c => c !== color)
-      : [...activeFilters.colors, color];
+      : [...(activeFilters?.colors || []), color];
     onFilterChange({ ...activeFilters, colors: newColors });
   };
 
   const handleTypeChange = (type: string) => {
-    const newTypes = activeFilters.types.includes(type)
-      ? activeFilters.types.filter(t => t !== type)
-      : [...activeFilters.types, type];
-    onFilterChange({ ...activeFilters, types: newTypes });
+    const newTypes = activeFilters?.productTypes?.includes(type)
+      ? activeFilters.productTypes.filter(t => t !== type)
+      : [...(activeFilters?.productTypes || []), type];
+    onFilterChange({ ...activeFilters, productTypes: newTypes });
   };
 
   const handleRatingChange = (rating: number) => {
@@ -41,10 +47,7 @@ export default function Filter({ activeFilters, onFilterChange }: FilterProps) {
   };
 
   const handleSellerChange = (seller: string) => {
-    const newSellers = activeFilters.sellers.includes(seller)
-      ? activeFilters.sellers.filter(s => s !== seller)
-      : [...activeFilters.sellers, seller];
-    onFilterChange({ ...activeFilters, sellers: newSellers });
+    onFilterChange({ ...activeFilters, seller });
   };
 
   return (
@@ -76,7 +79,7 @@ export default function Filter({ activeFilters, onFilterChange }: FilterProps) {
             <label key={color} className="flex items-center">
               <input
                 type="checkbox"
-                checked={activeFilters.colors.includes(color)}
+                checked={activeFilters?.colors?.includes(color) || false}
                 onChange={() => handleColorChange(color)}
                 className="rounded text-primary-600 focus:ring-primary-500"
               />
@@ -94,7 +97,7 @@ export default function Filter({ activeFilters, onFilterChange }: FilterProps) {
             <label key={type} className="flex items-center">
               <input
                 type="checkbox"
-                checked={activeFilters.types.includes(type)}
+                checked={activeFilters?.productTypes?.includes(type) || false}
                 onChange={() => handleTypeChange(type)}
                 className="rounded text-primary-600 focus:ring-primary-500"
               />
@@ -113,7 +116,7 @@ export default function Filter({ activeFilters, onFilterChange }: FilterProps) {
               key={rating}
               onClick={() => handleRatingChange(rating)}
               className={`p-1 rounded ${
-                activeFilters.rating === rating
+                activeFilters?.rating === rating
                   ? 'bg-primary-100 text-primary-600'
                   : 'text-gray-400 hover:text-gray-600'
               }`}
@@ -132,7 +135,7 @@ export default function Filter({ activeFilters, onFilterChange }: FilterProps) {
             <label key={seller} className="flex items-center">
               <input
                 type="checkbox"
-                checked={activeFilters.sellers.includes(seller)}
+                checked={activeFilters?.seller === seller}
                 onChange={() => handleSellerChange(seller)}
                 className="rounded text-primary-600 focus:ring-primary-500"
               />

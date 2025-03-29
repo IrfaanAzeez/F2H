@@ -25,32 +25,26 @@ interface WishlistContextType {
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
+  const [mounted, setMounted] = useState(false);
   const [wishlist, setWishlist] = useState<Product[]>([]);
 
-  // Load wishlist from localStorage on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedWishlist = localStorage.getItem('wishlist');
-      if (savedWishlist) {
-        try {
-          setWishlist(JSON.parse(savedWishlist));
-        } catch (error) {
-          console.error('Error loading wishlist:', error);
-        }
+    setMounted(true);
+    const savedWishlist = localStorage.getItem('wishlist');
+    if (savedWishlist) {
+      try {
+        setWishlist(JSON.parse(savedWishlist));
+      } catch (error) {
+        console.error('Error loading wishlist:', error);
       }
     }
   }, []);
 
-  // Save wishlist to localStorage whenever it changes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem('wishlist', JSON.stringify(wishlist));
-      } catch (error) {
-        console.error('Error saving wishlist:', error);
-      }
+    if (mounted) {
+      localStorage.setItem('wishlist', JSON.stringify(wishlist));
     }
-  }, [wishlist]);
+  }, [wishlist, mounted]);
 
   const addToWishlist = (product: Product) => {
     setWishlist(prev => {
@@ -68,6 +62,10 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const isInWishlist = (productId: number) => {
     return wishlist.some(item => item.id === productId);
   };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <WishlistContext.Provider value={{ wishlist, addToWishlist, removeFromWishlist, isInWishlist }}>

@@ -5,10 +5,24 @@ import Pagination from '../components/Pagination';
 import Filter from '../components/Filter';
 import { BsHeart, BsHeartFill, BsStar, BsStarFill } from 'react-icons/bs';
 import { useState } from 'react';
+import { useWishlist } from '../context/WishlistContext';
+
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  rating: number;
+  reviews: number;
+  image: string;
+  color: string;
+  type: string;
+  seller: string;
+}
 
 // Product Card Component
-function ProductCard({ product }: { product: any }) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
+function ProductCard({ product }: { product: Product }) {
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -20,10 +34,10 @@ function ProductCard({ product }: { product: any }) {
           className="w-full h-48 object-cover"
         />
         <button 
-          onClick={() => setIsWishlisted(!isWishlisted)}
+          onClick={() => isInWishlist(product.id) ? removeFromWishlist(product.id) : addToWishlist(product)}
           className="absolute top-2 right-2 p-2 rounded-full bg-white shadow-md hover:bg-gray-100"
         >
-          {isWishlisted ? (
+          {isInWishlist(product.id) ? (
             <BsHeartFill className="w-5 h-5 text-red-500" />
           ) : (
             <BsHeart className="w-5 h-5 text-gray-600" />
@@ -76,7 +90,7 @@ export default function KidsFashion() {
     id: index + 1,
     name: `Product ${index + 1}`,
     description: "Comfortable and fun designs",
-    price: (Math.random() * 100 + 20).toFixed(2),
+    price: Math.floor(Math.random() * 100) + 20,
     rating: Math.floor(Math.random() * 2) + 4, // Random rating between 4-5
     reviews: Math.floor(Math.random() * 200) + 100, // Random reviews between 100-300
     image: `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000)}?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80`,
@@ -93,8 +107,7 @@ export default function KidsFashion() {
     }
 
     // Price filter
-    const price = parseFloat(product.price);
-    if (price < activeFilters.priceRange.min || price > activeFilters.priceRange.max) {
+    if (product.price < activeFilters.priceRange.min || product.price > activeFilters.priceRange.max) {
       return false;
     }
 
@@ -138,7 +151,10 @@ export default function KidsFashion() {
         <div className="flex gap-8">
           {/* Filter Sidebar */}
           <div className="hidden md:block">
-            <Filter onFilterChange={handleFilterChange} />
+            <Filter 
+              activeFilters={activeFilters}
+              onFilterChange={handleFilterChange} 
+            />
           </div>
 
           {/* Product Grid */}
